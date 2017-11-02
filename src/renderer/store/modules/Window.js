@@ -3,22 +3,29 @@ const state = {
   FRAME_WIDTH: 30,
   target: 'mockRoot',
   window: {
-    width: 200,
+    width: 300,
     height: 200,
     'flex-direction': 'row',
     children: [
       {
         children: [
-          {},
+          {
+            height: 30
+          },
           {
             children: [
               {},
+              {
+                width: 100
+              },
               {}
             ]
           }
         ]
       },
-      {}
+      {
+        width: 30
+      }
     ]
   }
 }
@@ -36,10 +43,33 @@ const actions = {
 }
 
 const getters = {
+  getMullionWidth: state => state.MULLION_WIDTH,
+  getFrameWidth: state => state.FRAME_WIDTH,
   getWindow: state => state.window,
   getTarget: state => state.target,
-  getMullionWidth: state => state.MULLION_WIDTH,
-  getFrameWidth: state => state.FRAME_WIDTH
+  getTargetDetails: (state) => {
+    if (this.target === 'mockRoot') {
+      return {
+        width: state.window.width,
+        height: state.window.height,
+        'flex-direction': state.window['flex-direction']
+      }
+    } else {
+      let myTarget = this.target.split('-')
+      let myDom = {}
+      let result = {}
+      myDom.mockRoot = Object.assign({}, state.window)
+
+      for (var i = 0; i < myTarget.length; i++) {
+        myDom = myDom[i]
+        if (i === 'mockRoot') {
+          result.width = state.window.width - (state.FRAME_WIDTH * 2)
+          result.height = state.window.height - (state.FRAME_WIDTH * 2)
+          // result['flex-direction']: state.window['flex-direction']
+        }
+      }
+    }
+  }
 }
 
 export default {
