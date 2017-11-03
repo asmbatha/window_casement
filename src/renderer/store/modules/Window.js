@@ -48,27 +48,27 @@ const getters = {
   getWindow: state => state.window,
   getTarget: state => state.target,
   getTargetDetails: (state) => {
-    if (this.target === 'mockRoot') {
+    if (state.target === 'mockRoot') {
       return {
         width: state.window.width,
         height: state.window.height,
         'flex-direction': state.window['flex-direction']
       }
     } else {
-      let myTarget = this.target.split('-')
-      let myDom = {}
-      let myTargetDom = {}
+      let myTarget = state.target.split('-')
+      let myDom = {children: {}}
+      let myTargetDom = {children: {}}
       let result = {}
-      myDom.mockRoot = Object.assign({}, state.window)
+      myDom.children.mockRoot = Object.assign({}, state.window)
 
       for (var i = 0; i < myTarget.length; i++) {
-        myTargetDom = myTargetDom[myTarget[i]] || myDom[myTarget[i]]
+        myTargetDom = myTargetDom['children'][myTarget[i]] || myDom['children'][myTarget[i]]
 
         if (myTargetDom['flex-direction']) result['flex-direction'] = myTargetDom['flex-direction']
         else result['flex-direction'] = result['flex-direction'] === 'row' ? 'column' : 'row'
-        
-        let last = (i + 1) === myTarget.length
+
         let secondLast = (i + 2) === myTarget.length
+        let thirdLast = (i + 3) === myTarget.length
         let row = result['flex-direction'] === 'row'
         let column = result['flex-direction'] === 'column'
 
@@ -81,6 +81,10 @@ const getters = {
         if (myTarget[i] === 'mockRoot') {
           result.width -= (state.FRAME_WIDTH * 2)
           result.height -= (state.FRAME_WIDTH * 2)
+          result.maxWidth = result.width
+          result.minWidth = result.width
+          result.minHeight = result.height
+          result.maxHeight = result.height
         }
 
         if (row) {
@@ -111,6 +115,22 @@ const getters = {
 
               result.minWidth = flexSiblings ? 0 : result.maxWidth
             }
+
+            if (thirdLast) {
+              result.maxHeight = result.height
+              if (myTargetDom.children.length > 1) result.maxHeight -= (myTargetDom.children.length - 1) * state.MULLION_WIDTH
+
+              let flexSiblings = myTargetDom.children.length - 1
+
+              myTargetDom.children.forEach(function (child, index) {
+                if (index !== myTarget[i + 1] && child.height) {
+                  result.maxHeight -= child.height
+                  flexSiblings--
+                }
+              }, this)
+
+              result.minWidth = flexSiblings ? 0 : result.maxHeight
+            }
           }
         }
 
@@ -125,9 +145,44 @@ const getters = {
               else nodeCount++
             }, this)
             if (nodeCount) result.defaultHeight = result.defaultHeight / nodeCount
+
+            // set max and min width
+            if (secondLast) {
+              result.maxWidth = result.width
+              if (myTargetDom.children.length > 1) result.maxWidth -= (myTargetDom.children.length - 1) * state.MULLION_WIDTH
+
+              let flexSiblings = myTargetDom.children.length - 1
+
+              myTargetDom.children.forEach(function (child, index) {
+                if (index !== myTarget[i + 1] && child.width) {
+                  result.maxWidth -= child.width
+                  flexSiblings--
+                }
+              }, this)
+
+              result.minWidth = flexSiblings ? 0 : result.maxWidth
+            }
+
+            if (thirdLast) {
+              result.maxHeight = result.height
+              if (myTargetDom.children.length > 1) result.maxHeight -= (myTargetDom.children.length - 1) * state.MULLION_WIDTH
+
+              let flexSiblings = myTargetDom.children.length - 1
+
+              myTargetDom.children.forEach(function (child, index) {
+                if (index !== myTarget[i + 1] && child.height) {
+                  result.maxHeight -= child.height
+                  flexSiblings--
+                }
+              }, this)
+
+              result.minWidth = flexSiblings ? 0 : result.maxHeight
+            }
           }
         }
       }
+
+      return result
     }
   }
 }

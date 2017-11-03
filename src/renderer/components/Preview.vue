@@ -56,7 +56,6 @@ export default {
             this.renderChildren(createElement, node['children'], childDefault)
             )
           } else {
-            console.log(style)
             return createElement('div', {
               'class': {
                 previewPane: true,
@@ -100,7 +99,6 @@ export default {
         'flex-direction': this.getWindow['flex-direction'],
         'width': `${this.getWindow['width'] - (this.frame * 2)}px`,
         'height': `${this.getWindow['height'] - (this.frame * 2)}px`,
-        'outline': `${this.frame}px solid #AAA`,
         '--child-width': childWidth + 'px',
         '--child-height': childHeight + 'px'
       }
@@ -146,7 +144,6 @@ export default {
         '--child-height': childHeight + 'px'
       }
 
-      console.log(style)
       return style
     },
     childDefaultStyle: function (children, obj) {
@@ -156,12 +153,25 @@ export default {
     }
   },
   render: function (createElement) {
-    return createElement('div', {
-      attrs: {
-        id: 'preview'
-      }
-    },
-    this.renderChildren(createElement)
+    return createElement(
+      'div', {
+        attrs: {
+          id: 'preview'
+        }
+      },
+      [
+        createElement(
+          'div', {
+            attrs: {
+              id: 'frame'
+            },
+            style: {
+              'border-width': this.mullion + 'px'
+            }
+          },
+          this.renderChildren(createElement)
+        )
+      ]
     )
   },
   computed: {
@@ -179,7 +189,10 @@ export default {
   #preview {
     padding: 50px;
   }
-
+  #frame {
+    border: 30px solid #AAA;
+    display: inline-block;
+  }
   #previewRoot {
     border: 1px solid #777;
     display: flex;

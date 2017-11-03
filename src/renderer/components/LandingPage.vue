@@ -2,35 +2,27 @@
   <div id='wrapper'>
     <div id='control-pane'>
       <div id='window-size'>
-        <!-- <h5>Window size</h5> -->
-        {{target}}
-        <br/>
-        <input type='number' step='10' min='200' value='200' id='window-width' name='window-width' placeholder="width">
-        <input type='number' step='10' min='200' value='200' id='window-height' name='window-height' placeholder="height">
+        <mock-up></mock-up>
+        <pane-control></pane-control>
       </div>
     </div>
     <main>
       <preview></preview>
-      <mock-up></mock-up>
     </main>
   </div>
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
 import Preview from './Preview'
 import MockUp from './MockUp'
+import PaneControl from './LandingPage/PaneControl'
 
 export default {
   name: 'landing-page',
   components: {
     Preview,
-    MockUp
-  },
-  computed: {
-    ...mapGetters({
-      target: 'getTarget'
-    })
+    MockUp,
+    PaneControl
   }
 }
 </script>

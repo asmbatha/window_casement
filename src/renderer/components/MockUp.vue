@@ -115,9 +115,10 @@ export default {
 
 <style>
   #mockUp {
-    border-top: 1px solid #414141;
+    border-bottom: 1px solid #414141;
     display: flex;
     justify-content: center;
+    padding-bottom: 10px;
   }
   #mockRoot {
     border: 1px dashed #AAA;
