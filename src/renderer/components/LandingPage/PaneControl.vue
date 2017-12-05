@@ -1,16 +1,20 @@
 <template>
   <div id="controlPane">
-    <div v-if="targetDetails.minWidth !== undefined">
+    <div v-if="targetDetails.intW !== undefined">
       <label>
-        Width: <input type="number" :value="targetDetails.width" disabled/>
+        <output name="result">{{ targetDetails.width }}</output>
+        {{ targetDetails.minWidth }}
+        <input type="range" :min="targetDetails.intW" :max="targetDetails.maxWidth" :value="targetDetails.width" step="1"> 
+        {{ targetDetails.maxWidth }}
       </label>
-      <input type="range" :min="targetDetails.minWidth" :max="targetDetails.maxWidth" :value="targetDetails.width" step="1"> 
     </div>
-    <div v-if="targetDetails.minHeight !== undefined">
+    <div v-if="targetDetails.intH !== undefined">
       <label>
-        Height: <input type="number" :value="targetDetails.height" disabled/>
+        <output name="result">{{ targetDetails.height }}</output>
+        {{ targetDetails.minHeight }}
+        <input type="range" :min="targetDetails.intH" :max="targetDetails.maxHeight" :value="targetDetails.height" step="1"> 
+        {{ targetDetails.maxHeight }}
       </label>
-      <input type="range" :min="targetDetails.minHeight" :max="targetDetails.maxHeight" :value="targetDetails.height" step="1"> 
     </div>
   </div>
 </template>

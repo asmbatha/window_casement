@@ -10,7 +10,6 @@ const state = {
       {
         children: [
           {
-            height: 30
           },
           {
             children: [
@@ -33,12 +32,60 @@ const state = {
 const mutations = {
   SET_TARGET (state, target) {
     state.target = target
+  },
+  UPDATE_DEFAULTS (state) {
+    setDefaults(state.window)
+    procInternalConstraints(state.window)
+
+    console.log(state.window)
   }
 }
 
 const actions = {
   setTarget ({ commit }, val) {
     commit('SET_TARGET', val)
+  },
+  updateDefaults ({ commit }) {
+    commit('UPDATE_DEFAULTS')
+  }
+}
+
+function setDefaults (obj) {
+  obj.intW = 0
+  obj.intH = 0
+  if (!obj.width) obj.width = 'auto'
+  if (!obj.height) obj.height = 'auto'
+
+  if (!obj.children) return
+
+  var flexDirection = obj['flex-direction'] === 'row' ? 'column' : 'row'
+
+  obj.children.forEach(child => {
+    child['flex-direction'] = flexDirection
+    setDefaults(child)
+  })
+}
+
+function procInternalConstraints (obj) {
+  if (!obj.children) return
+
+  obj.children.forEach(procInternalConstraints)
+
+  obj.intW = obj.children.reduce((a, b) => a + (Number(b.width) || b.intW), obj.intW)
+  obj.intH = obj.children.reduce((a, b) => a + (Number(b.height) || b.intH), obj.intH)
+
+  if (obj['flex-direction'] === 'row') {
+    obj.intW += (obj.children.length - 1) * state.MULLION_WIDTH
+
+    var childIntH = Math.max.apply(Math, obj.children.map(a => a.intH))
+    obj.children.forEach(a => { a.intH = childIntH })
+  }
+
+  if (obj['flex-direction'] === 'column') {
+    obj.intH += (obj.children.length - 1) * state.MULLION_WIDTH
+
+    var childIntW = Math.max.apply(Math, obj.children.map(a => a.intW))
+    obj.children.forEach(a => { a.intW = childIntW })
   }
 }
 
@@ -67,8 +114,6 @@ const getters = {
         if (myTargetDom['flex-direction']) result['flex-direction'] = myTargetDom['flex-direction']
         else result['flex-direction'] = result['flex-direction'] === 'row' ? 'column' : 'row'
 
-        let secondLast = (i + 2) === myTarget.length
-        let thirdLast = (i + 3) === myTarget.length
         let row = result['flex-direction'] === 'row'
         let column = result['flex-direction'] === 'column'
 
@@ -100,84 +145,50 @@ const getters = {
             if (nodeCount) result.defaultWidth = result.defaultWidth / nodeCount
 
             // set max and min width
-            if (secondLast) {
-              result.maxWidth = result.width
-              if (myTargetDom.children.length > 1) result.maxWidth -= (myTargetDom.children.length - 1) * state.MULLION_WIDTH
+            if (myTargetDom.children.length > 1) result.maxWidth -= (myTargetDom.children.length - 1) * state.MULLION_WIDTH
 
-              let flexSiblings = myTargetDom.children.length - 1
+            let flexSiblings = myTargetDom.children.length - 1
 
-              myTargetDom.children.forEach(function (child, index) {
-                if (index !== myTarget[i + 1] && child.width) {
-                  result.maxWidth -= child.width
-                  flexSiblings--
-                }
-              }, this)
+            myTargetDom.children.forEach(function (child, index) {
+              if (index !== myTarget[i + 1] && child.width) {
+                result.maxWidth -= child.width
+                flexSiblings--
+              }
+            }, this)
 
-              result.minWidth = flexSiblings ? 0 : result.maxWidth
-            }
+            if (myTargetDom.children[myTarget[i + 1]].width) result.maxWidth += myTargetDom.children[myTarget[i + 1]].width
 
-            if (thirdLast) {
-              result.maxHeight = result.height
-              if (myTargetDom.children.length > 1) result.maxHeight -= (myTargetDom.children.length - 1) * state.MULLION_WIDTH
-
-              let flexSiblings = myTargetDom.children.length - 1
-
-              myTargetDom.children.forEach(function (child, index) {
-                if (index !== myTarget[i + 1] && child.height) {
-                  result.maxHeight -= child.height
-                  flexSiblings--
-                }
-              }, this)
-
-              result.minWidth = flexSiblings ? 0 : result.maxHeight
-            }
+            result.minWidth = flexSiblings ? 0 : result.maxWidth
           }
         }
 
         if (column) {
-          // remove mullions
           if (myTargetDom.children) {
             let nodeCount = 0
-            if (myTargetDom.children.length) result.defaultHeight -= (myTargetDom.children.length - 1) * state.MULLION_WIDTH
+            if (myTargetDom.children.length > 1) result.defaultHeight -= (myTargetDom.children.length - 1) * state.MULLION_WIDTH
 
             myTargetDom.children.forEach(function (child) {
-              if (child.height) result.defaultHeight -= child.height
+              if (child.width) result.defaultHeight -= child.width
               else nodeCount++
             }, this)
+
             if (nodeCount) result.defaultHeight = result.defaultHeight / nodeCount
 
-            // set max and min width
-            if (secondLast) {
-              result.maxWidth = result.width
-              if (myTargetDom.children.length > 1) result.maxWidth -= (myTargetDom.children.length - 1) * state.MULLION_WIDTH
+            // set max and min height
+            if (myTargetDom.children.length > 1) result.maxHeight -= (myTargetDom.children.length - 1) * state.MULLION_WIDTH
 
-              let flexSiblings = myTargetDom.children.length - 1
+            let flexSiblings = myTargetDom.children.length - 1
 
-              myTargetDom.children.forEach(function (child, index) {
-                if (index !== myTarget[i + 1] && child.width) {
-                  result.maxWidth -= child.width
-                  flexSiblings--
-                }
-              }, this)
+            myTargetDom.children.forEach(function (child, index) {
+              if (index !== myTarget[i + 1] && child.height) {
+                result.maxHeight -= child.height
+                flexSiblings--
+              }
+            }, this)
 
-              result.minWidth = flexSiblings ? 0 : result.maxWidth
-            }
+            if (myTargetDom.children[myTarget[i + 1]].height) result.maxHeight += myTargetDom.children[myTarget[i + 1]].height
 
-            if (thirdLast) {
-              result.maxHeight = result.height
-              if (myTargetDom.children.length > 1) result.maxHeight -= (myTargetDom.children.length - 1) * state.MULLION_WIDTH
-
-              let flexSiblings = myTargetDom.children.length - 1
-
-              myTargetDom.children.forEach(function (child, index) {
-                if (index !== myTarget[i + 1] && child.height) {
-                  result.maxHeight -= child.height
-                  flexSiblings--
-                }
-              }, this)
-
-              result.minWidth = flexSiblings ? 0 : result.maxHeight
-            }
+            result.minWidth = flexSiblings ? 0 : result.maxHeight
           }
         }
       }

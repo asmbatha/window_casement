@@ -23,6 +23,9 @@ export default {
     Preview,
     MockUp,
     PaneControl
+  },
+  created () {
+    this.$store.dispatch('updateDefaults')
   }
 }
 </script>
